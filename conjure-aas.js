@@ -27,14 +27,19 @@ function submitHandler(req, res) {
     fs.writeFileSync(`conjure-output/${thisJobId}/model.essence`, req.body.model);
     fs.writeFileSync(`conjure-output/${thisJobId}/data.json`, req.body.data);
 
-    // run conjure
+    // the user can specify which solver to use, default is kissat
+    let solver = "kissat";
+    if (req.body.solver !== undefined) {
+        solver = req.body.solver;
+    }
 
+    // run conjure
     conjure_spawn = spawn('conjure',
         ['solve'
             , `conjure-output/${thisJobId}/model.essence`
             , `conjure-output/${thisJobId}/data.json`
             , '--output-directory', `conjure-output/${thisJobId}`
-            , '--solver', 'kissat'
+            , '--solver', solver
             , '--output-format', 'json'
             // , '--copy-solutions', 'no'
         ]);

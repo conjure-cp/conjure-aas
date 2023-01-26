@@ -23,8 +23,11 @@
             fetch("submit", {
                 method: 'POST', headers: {
                     'Content-Type': 'application/json'
-
-                }, body: JSON.stringify({ model: document.getElementById('model').value, data: document.getElementById('data').value })
+                }, body: JSON.stringify({
+                    solver: "chuffed", // this is optional
+                    model: document.getElementById('model').value,
+                    data: document.getElementById('data').value
+                })
             })
                 .then(response => response.json())
                 .then(json => document.getElementById("response").innerHTML = JSON.stringify(json));
