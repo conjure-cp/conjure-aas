@@ -24,7 +24,7 @@
                 method: 'POST', headers: {
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
-                    solver: "chuffed", // this is optional
+                    solver: "cadical", // this is optional
                     model: document.getElementById('model').value,
                     data: document.getElementById('data').value
                 })
@@ -54,7 +54,7 @@ such that x >= n, x <= m
 
         <br />
 
-        <button onclick="submit()">Submit</button>
+        <button type="button" class="btn btn-light" onclick="submit()">Submit</button>
 
         <pre id="response">Response placeholder</pre>
     </div>
