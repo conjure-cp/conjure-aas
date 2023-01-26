@@ -27,7 +27,7 @@
                 }, body: JSON.stringify({ jobid: document.getElementById('jobid').value })
             })
                 .then(response => response.json())
-                .then(json => document.getElementById("response").innerHTML = JSON.stringify(json));
+                .then(json => document.getElementById("response").innerHTML = JSON.stringify(json, undefined, 2));
         }
     </script>
 
@@ -39,7 +39,7 @@
         <label>Job ID:</label>
         <input id="jobid" value="1" type="number">
         <button onclick="get()">Get</button>
-        <div id="response">Response placeholder</div>
+        <pre id="response">Response placeholder</pre>
     </div>
 </body>
 

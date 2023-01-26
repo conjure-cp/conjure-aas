@@ -30,7 +30,7 @@
                 })
             })
                 .then(response => response.json())
-                .then(json => document.getElementById("response").innerHTML = JSON.stringify(json));
+                .then(json => document.getElementById("response").innerHTML = JSON.stringify(json, undefined, 2));
         }
     </script>
 
@@ -56,7 +56,7 @@ such that x >= n, x <= m
 
         <button onclick="submit()">Submit</button>
 
-        <div id="response">Response placeholder</div>
+        <pre id="response">Response placeholder</pre>
     </div>
 </body>
 
