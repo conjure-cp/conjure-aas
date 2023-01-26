@@ -1,21 +1,21 @@
 
-const fs = require('fs');
-const { spawn } = require('node:child_process');
-const md5 = require('md5');
+const fs = require("fs");
+const { spawn } = require("node:child_process");
+const md5 = require("md5");
 
 let config = fs.readFileSync("config.json");
 config = JSON.parse(config);
 
-const express = require('express');
+const express = require("express");
 
 const app = express();
 
 app.use(express.json())
-app.use(express.static('static'))
+app.use(express.static("static"))
 
-fs.mkdirSync('model-cache', { recursive: true });
-fs.mkdirSync('conjure-output', { recursive: true });
-let logStream = fs.createWriteStream('logs.txt', { flags: 'a' });
+fs.mkdirSync("model-cache", { recursive: true });
+fs.mkdirSync("conjure-output", { recursive: true });
+let logStream = fs.createWriteStream("logs.txt", { flags: "a" });
 
 function log(message) {
     let timestamp = new Date().toISOString();
@@ -27,7 +27,7 @@ function submitHandler(req, res) {
 
     // next job id
     let thisJobId = config.nextJobId++;
-    fs.writeFileSync('config.json', JSON.stringify(config));
+    fs.writeFileSync("config.json", JSON.stringify(config));
 
     log(`submit ${thisJobId}`)
 
@@ -38,7 +38,7 @@ function submitHandler(req, res) {
     let cacheKey = md5(req.body.model);
     let cacheHit = false;
 
-    // create Conjure's input files
+    // create Conjure"s input files
     try {
         // can we copy from the cache?
         fs.copyFileSync(`model-cache/${cacheKey}.conjure-checksum`, `conjure-output/${thisJobId}/.conjure-checksum`);
@@ -62,20 +62,20 @@ function submitHandler(req, res) {
     }
 
     // run conjure
-    let conjure_spawn = spawn('conjure',
-        ['solve'
+    let conjure_spawn = spawn("conjure",
+        ["solve"
             , `conjure-output/${thisJobId}/model.essence`
             , `conjure-output/${thisJobId}/data.json`
-            , '--output-directory', `conjure-output/${thisJobId}`
-            , '--solver', solver
-            , '--output-format=json'
-            , '--copy-solutions=no'
+            , "--output-directory", `conjure-output/${thisJobId}`
+            , "--solver", solver
+            , "--output-format=json"
+            , "--copy-solutions=no"
         ]);
 
-    let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: 'a' });
+    let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
     conjure_spawn.stdout.pipe(thisLogStream);
     conjure_spawn.stderr.pipe(thisLogStream);
-    conjure_spawn.on('close', (code) => {
+    conjure_spawn.on("close", (code) => {
         if (code == 0 && cacheHit == false) {
             // save the model in the model-cache
             fs.copyFileSync(`conjure-output/${thisJobId}/.conjure-checksum`, `model-cache/${cacheKey}.conjure-checksum`);
@@ -104,7 +104,7 @@ function getHandler(req, res) {
     }
 }
 
-app.post('/submit', submitHandler);
-app.post('/get', getHandler);
+app.post("/submit", submitHandler);
+app.post("/get", getHandler);
 
-app.listen(8080, () => console.log('listening'));
+app.listen(8080, () => console.log("listening"));
