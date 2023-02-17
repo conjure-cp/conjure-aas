@@ -85,6 +85,7 @@ function submitHandler(req, res) {
         }
         log(`submit ${thisJobId} - exitcode ${code}`);
         thisLogStream.write(`submit ${thisJobId} - exitcode ${code}\n`);
+        fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, "terminated - exitcode ${code}");
     });
 
     log(`submit ${thisJobId} - spawned`)
@@ -120,6 +121,15 @@ function getHandler(req, res) {
         info = err;
     }
 
+    // reading the status file
+    const statusFile = `conjure-output/${jobid}/status.txt`;
+    let status_ = "";
+    try {
+        status_ = fs.readFileSync(status_, "utf8");
+    } catch (err) {
+        status_ = "wait";
+    }
+
     // reading the solution flie
     const solutionFile = `conjure-output/${jobid}/model000001-data-solution000001.solution.json`;
     try {
@@ -131,8 +141,8 @@ function getHandler(req, res) {
                  , logs: logs.split("\n")
                  });
     } catch (err) {
-        log(`get ${jobid} - wait`);
-        res.json({ status: "wait"
+        log(`get ${jobid} - ${status_}`);
+        res.json({ status: status_
                  , info: info
                  , logs: logs.split("\n")
                  , err: err
