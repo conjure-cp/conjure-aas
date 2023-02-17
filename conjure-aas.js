@@ -135,7 +135,7 @@ function getHandler(req, res) {
         res.json({ status: "wait"
                  , info: info
                  , logs: logs.split("\n")
-                 , err: err.split("\n")
+                 , err: err
                  });
     }
 }
