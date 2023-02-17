@@ -93,14 +93,50 @@ function submitHandler(req, res) {
 
 function getHandler(req, res) {
     let jobid = req.body.jobid;
-    const solutionFile = `conjure-output/${jobid}/model000001-data-solution000001.solution.json`
-    if (fs.existsSync(solutionFile)) {
-        log(`get ${jobid} - ok`);
-        res.json({ status: "ok", solution: JSON.parse(fs.readFileSync(solutionFile)) });
+
+    // reading the logs
+    const logsFile = `conjure-output/${jobid}/logs.txt`;
+    let logs = "";
+    try {
+        logs = fs.readFileSync(logsFile, "utf8");
+    } catch (err) {
+        logs = err
     }
-    else {
+
+    // reading the info file
+    const infoFile = `conjure-output/${jobid}/model000001-data.eprime-info`;
+    let info = "";
+    try {
+        info = fs.readFileSync(infoFile, "utf8");
+        let infoObj = {}
+        for (let line of info.split("\n")) {
+            let parts = line.split(":");
+            if (parts.length == 2) {
+                infoObj[parts[0]] = parts[1]
+            }
+        }
+        info = infoObj;
+    } catch (err) {
+        info = err;
+    }
+
+    // reading the solution flie
+    const solutionFile = `conjure-output/${jobid}/model000001-data-solution000001.solution.json`;
+    try {
+        const solution = JSON.parse(fs.readFileSync(solutionFile));
+        log(`get ${jobid} - ok`);
+        res.json({ status: "ok"
+                 , solution: solution
+                 , info: info
+                 , logs: logs.split("\n")
+                 });
+    } catch (err) {
         log(`get ${jobid} - wait`);
-        res.json({ status: "wait" });
+        res.json({ status: "wait"
+                 , info: info
+                 , logs: logs.split("\n")
+                 , err: err.split("\n")
+                 });
     }
 }
 
