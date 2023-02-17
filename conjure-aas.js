@@ -35,7 +35,7 @@ function submitHandler(req, res) {
     fs.mkdirSync(`conjure-output/${thisJobId}`, { recursive: true });
 
     // we cache the essence + eprime in a model-cache to avoid rerunning conjure-modelling
-    let cacheKey = md5(req.body.model);
+    let cacheKey = md5(req.body.model.trim());
     let cacheHit = false;
 
     // create Conjure"s input files
