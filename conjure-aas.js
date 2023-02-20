@@ -125,7 +125,7 @@ function getHandler(req, res) {
     const statusFile = `conjure-output/${jobid}/status.txt`;
     let status_ = "";
     try {
-        status_ = fs.readFileSync(status_, "utf8");
+        status_ = fs.readFileSync(statusFile, "utf8");
     } catch (err) {
         status_ = "wait";
     }
