@@ -100,8 +100,9 @@ function getHandler(req, res) {
     let logs = "";
     try {
         logs = fs.readFileSync(logsFile, "utf8");
+        logs = logs.split("\n");
     } catch (err) {
-        logs = err
+        logs = err;
     }
 
     // reading the info file
@@ -138,13 +139,13 @@ function getHandler(req, res) {
         res.json({ status: "ok"
                  , solution: solution
                  , info: info
-                 , logs: logs.split("\n")
+                 , logs: logs
                  });
     } catch (err) {
         log(`get ${jobid} - ${status_}`);
         res.json({ status: status_
                  , info: info
-                 , logs: logs.split("\n")
+                 , logs: logs
                  , err: err
                  });
     }
