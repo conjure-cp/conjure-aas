@@ -89,6 +89,7 @@ function submitHandler(req, res) {
     });
 
     log(`submit ${thisJobId} - spawned`)
+    fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
 
@@ -128,7 +129,7 @@ function getHandler(req, res) {
     try {
         status_ = fs.readFileSync(statusFile, "utf8");
     } catch (err) {
-        status_ = "wait";
+        status_ = "not found";
     }
 
     // reading the solution flie
