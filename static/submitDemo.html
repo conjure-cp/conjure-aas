@@ -30,7 +30,10 @@
                 })
             })
                 .then(response => response.json())
-                .then(json => document.getElementById("response").innerHTML = JSON.stringify(json, undefined, 2));
+                .then(json => {
+                    document.getElementById("response").innerHTML = JSON.stringify(json, undefined, 2);
+                    document.getElementById("getDemoLink").href = 'getDemo.html#' + json['jobid'];
+                    document.getElementById("getDemoLink").innerHTML = 'getDemo.html#' + json['jobid'];                 })
         }
     </script>
 
@@ -58,7 +61,7 @@ such that x >= n, x <= m
 
         <pre id="response">Response placeholder</pre>
         
-        <p>Go to <a href="getDemo.html">getDemo.html</a> to access the solution.</p>
+        <p>Go to <a id="getDemoLink" href="getDemo.html">getDemo.html</a> to access the solution.</p>
 
     </div>
 </body>
