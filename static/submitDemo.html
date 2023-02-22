@@ -34,7 +34,8 @@
                 .then(json => {
                     document.getElementById("response").innerHTML = JSON.stringify(json, undefined, 2);
                     document.getElementById("getDemoLink").href = 'getDemo.html#' + json['jobid'];
-                    document.getElementById("getDemoLink").innerHTML = 'getDemo.html#' + json['jobid'];                 })
+                    document.getElementById("getDemoLink").innerHTML = 'getDemo.html#' + json['jobid'];
+                })
         }
     </script>
 
