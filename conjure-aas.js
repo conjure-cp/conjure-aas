@@ -46,10 +46,10 @@ function submitHandler(req, res) {
         fs.copyFileSync(`model-cache/${cacheKey}.conjure-checksum`, `conjure-output/${thisJobId}/.conjure-checksum`);
         fs.copyFileSync(`model-cache/${cacheKey}.essence`, `conjure-output/${thisJobId}/model.essence`);
         fs.copyFileSync(`model-cache/${cacheKey}.eprime`, `conjure-output/${thisJobId}/model000001.eprime`);
-        log(`submit ${thisJobId} - cache hit`);
+        log(`submit ${thisJobId} - cache hit ${cacheKey}`);
         cacheHit = true;
     } catch (e) {
-        log(`submit ${thisJobId} - cache miss`);
+        log(`submit ${thisJobId} - cache miss ${cacheKey}`);
         fs.writeFileSync(`conjure-output/${thisJobId}/model.essence`, req.body.model);
         cacheHit = false;
     }
