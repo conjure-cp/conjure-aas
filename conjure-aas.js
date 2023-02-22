@@ -7,11 +7,13 @@ let config = fs.readFileSync("config.json");
 config = JSON.parse(config);
 
 const express = require("express");
+const cors = require('cors')
 
 const app = express();
 
-app.use(express.json())
-app.use(express.static("static"))
+app.use(cors());
+app.use(express.json());
+app.use(express.static("static"));
 
 fs.mkdirSync("model-cache", { recursive: true });
 fs.mkdirSync("conjure-output", { recursive: true });
