@@ -63,6 +63,12 @@ function submitHandler(req, res) {
         solver = req.body.solver;
     }
 
+    // the user can specify additional options to be passed to conjure
+    let conjure_options = [];
+    if (req.body.conjure_options !== undefined) {
+        conjure_options = req.body.conjure_options;
+    }
+
     // run conjure
     let conjure_spawn = spawn("conjure",
         ["solve"
@@ -71,8 +77,9 @@ function submitHandler(req, res) {
             , "--output-directory", `conjure-output/${thisJobId}`
             , "--solver", solver
             , "--output-format=json"
+            , "--solutions-in-one-file"
             , "--copy-solutions=no"
-        ]);
+        ].concat(conjure_options));
 
     let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
     conjure_spawn.stdout.pipe(thisLogStream);
@@ -135,7 +142,7 @@ function getHandler(req, res) {
     }
 
     // reading the solution flie
-    const solutionFile = `conjure-output/${jobid}/model000001-data-solution000001.solution.json`;
+    const solutionFile = `conjure-output/${jobid}/model000001-data.solutions.json`;
     try {
         const solution = JSON.parse(fs.readFileSync(solutionFile));
         log(`get ${jobid} - ok`);
