@@ -97,7 +97,7 @@ function submitHandler(req, res) {
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - exitcode ${code}`);
     });
 
-    log(`submit ${thisJobId} - spawned`)
+    log(`submit ${thisJobId} - spawned with options: ${conjure_options.join(' ')}`)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
