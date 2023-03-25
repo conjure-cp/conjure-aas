@@ -16,6 +16,7 @@ fs.mkdirSync("model-cache", { recursive: true });
 fs.mkdirSync("conjure-output", { recursive: true });
 let logStream = fs.createWriteStream("logs.txt", { flags: "a" });
 
+
 function log(message) {
     let timestamp = new Date().toISOString();
     logStream.write(`${timestamp} ${message}\n`);
@@ -31,7 +32,12 @@ function submitHandler(req, res) {
     let thisJobId = config.nextJobId++;
     fs.writeFileSync("config.json", JSON.stringify(config));
 
-    log(`submit ${thisJobId}`)
+    let appName = "unknown-app";
+    if (req.body.appName !== undefined) {
+        appName = req.body.appName;
+    }
+
+    log(`submit ${appName} ${thisJobId}`)
 
     // create directory
     fs.mkdirSync(`conjure-output/${thisJobId}`, { recursive: true });
@@ -40,16 +46,16 @@ function submitHandler(req, res) {
     let cacheKey = md5(req.body.model.trim());
     let cacheHit = false;
 
-    // create Conjure"s input files
+    // create Conjure's input files
     try {
         // can we copy from the cache?
         fs.copyFileSync(`model-cache/${cacheKey}.conjure-checksum`, `conjure-output/${thisJobId}/.conjure-checksum`);
         fs.copyFileSync(`model-cache/${cacheKey}.essence`, `conjure-output/${thisJobId}/model.essence`);
         fs.copyFileSync(`model-cache/${cacheKey}.eprime`, `conjure-output/${thisJobId}/model000001.eprime`);
-        log(`submit ${thisJobId} - cache hit ${cacheKey}`);
+        log(`submit ${appName} ${thisJobId} - cache hit ${cacheKey}`);
         cacheHit = true;
     } catch (e) {
-        log(`submit ${thisJobId} - cache miss ${cacheKey}`);
+        log(`submit ${appName} ${thisJobId} - cache miss ${cacheKey}`);
         fs.writeFileSync(`conjure-output/${thisJobId}/model.essence`, req.body.model);
         cacheHit = false;
     }
@@ -90,20 +96,25 @@ function submitHandler(req, res) {
             fs.copyFileSync(`conjure-output/${thisJobId}/.conjure-checksum`, `model-cache/${cacheKey}.conjure-checksum`);
             fs.copyFileSync(`conjure-output/${thisJobId}/model.essence`, `model-cache/${cacheKey}.essence`);
             fs.copyFileSync(`conjure-output/${thisJobId}/model000001.eprime`, `model-cache/${cacheKey}.eprime`);
-            log(`submit ${thisJobId} - cache populated ${cacheKey}`);
+            log(`submit ${appName} ${thisJobId} - cache populated ${cacheKey}`);
         }
-        log(`submit ${thisJobId} - exitcode ${code}`);
+        log(`submit ${appName} ${thisJobId} - exitcode ${code}`);
         thisLogStream.write(`submit ${thisJobId} - exitcode ${code}\n`);
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - exitcode ${code}`);
     });
 
-    log(`submit ${thisJobId} - spawned with options: ${conjure_options.join(' ')}`)
+    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjure_options.join(' ')}`)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
 
 function getHandler(req, res) {
     let jobid = req.body.jobid;
+
+    let appName = "unknown-app";
+    if (req.body.appName !== undefined) {
+        appName = req.body.appName;
+    }
 
     // reading the logs
     const logsFile = `conjure-output/${jobid}/logs.txt`;
@@ -145,14 +156,14 @@ function getHandler(req, res) {
     const solutionFile = `conjure-output/${jobid}/model000001-data.solutions.json`;
     try {
         const solution = JSON.parse(fs.readFileSync(solutionFile));
-        log(`get ${jobid} - ok`);
+        log(`get ${appName} ${jobid} - ok`);
         res.json({ status: "ok"
                  , solution: solution
                  , info: info
                  , logs: logs
                  });
     } catch (err) {
-        log(`get ${jobid} - ${status_}`);
+        log(`get ${appName} ${jobid} - ${status_}`);
         res.json({ status: status_
                  , info: info
                  , logs: logs

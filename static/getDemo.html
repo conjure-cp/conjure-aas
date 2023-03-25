@@ -24,13 +24,16 @@
                 method: 'POST', headers: {
                     'Content-Type': 'application/json'
 
-                }, body: JSON.stringify({ jobid: document.getElementById('jobid').value })
+                }, body: JSON.stringify({
+                    appName: "demo", // so we know who is calling
+                    jobid: document.getElementById('jobid').value
+                })
             })
                 .then(response => response.json())
                 .then(json => document.getElementById("response").innerHTML = JSON.stringify(json, undefined, 2));
         }
 
-        window.onload = function() {
+        window.onload = function () {
             let jobid = window.location.href.split("#")[1];
             if (jobid) {
                 document.getElementById('jobid').value = parseInt(jobid);

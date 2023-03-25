@@ -24,10 +24,11 @@
                 method: 'POST', headers: {
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
-                    solver: "cadical", // this is optional
+                    appName: "demo", // so we know who is calling
+                    solver: "kissat", // this is optional
                     model: document.getElementById('model').value,
                     data: document.getElementById('data').value,
-                    conjure_options: ["--number-of-solutions", "1"]
+                    conjure_options: ["--number-of-solutions", "1"] // 1 is the default anyway
                 })
             })
                 .then(response => response.json())
