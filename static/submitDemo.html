@@ -28,7 +28,7 @@
                     solver: "kissat", // this is optional
                     model: document.getElementById('model').value,
                     data: document.getElementById('data').value,
-                    conjure_options: ["--number-of-solutions", "1"] // 1 is the default anyway
+                    conjureOptions: ["--number-of-solutions", "1"] // 1 is the default anyway
                 })
             })
                 .then(response => response.json())
@@ -63,7 +63,7 @@ such that x >= n, x <= m
         <button type="button" class="btn btn-light" onclick="submit()">Submit</button>
 
         <pre id="response">Response placeholder</pre>
-        
+
         <p>Go to <a id="getDemoLink" href="getDemo.html">getDemo.html</a> to access the solution.</p>
 
     </div>

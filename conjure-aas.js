@@ -70,13 +70,16 @@ function submitHandler(req, res) {
     }
 
     // the user can specify additional options to be passed to conjure
-    let conjure_options = [];
-    if (req.body.conjure_options !== undefined) {
-        conjure_options = req.body.conjure_options;
+    let conjureOptions = [];
+
+    if (req.body.conjureOptions !== undefined) {
+        conjureOptions = req.body.conjureOptions;
+    } else if (req.body.conjure_options !== undefined) { // so we don't break existing code
+        conjureOptions = req.body.conjure_options;
     }
 
     // run conjure
-    let conjure_spawn = spawn("conjure",
+    let conjureSpawn = spawn("conjure",
         ["solve"
             , `conjure-output/${thisJobId}/model.essence`
             , `conjure-output/${thisJobId}/data.json`
@@ -85,12 +88,12 @@ function submitHandler(req, res) {
             , "--output-format=json"
             , "--solutions-in-one-file"
             , "--copy-solutions=no"
-        ].concat(conjure_options));
+        ].concat(conjureOptions));
 
     let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
-    conjure_spawn.stdout.pipe(thisLogStream);
-    conjure_spawn.stderr.pipe(thisLogStream);
-    conjure_spawn.on("close", (code) => {
+    conjureSpawn.stdout.pipe(thisLogStream);
+    conjureSpawn.stderr.pipe(thisLogStream);
+    conjureSpawn.on("close", (code) => {
         if (code == 0 && cacheHit == false) {
             // save the model in the model-cache
             fs.copyFileSync(`conjure-output/${thisJobId}/.conjure-checksum`, `model-cache/${cacheKey}.conjure-checksum`);
@@ -103,7 +106,7 @@ function submitHandler(req, res) {
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - exitcode ${code}`);
     });
 
-    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjure_options.join(' ')}`)
+    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions.join(' ')}`)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
@@ -157,18 +160,20 @@ function getHandler(req, res) {
     try {
         const solution = JSON.parse(fs.readFileSync(solutionFile));
         log(`get ${appName} ${jobid} - ok`);
-        res.json({ status: "ok"
-                 , solution: solution
-                 , info: info
-                 , logs: logs
-                 });
+        res.json({
+            status: "ok"
+            , solution: solution
+            , info: info
+            , logs: logs
+        });
     } catch (err) {
         log(`get ${appName} ${jobid} - ${status_}`);
-        res.json({ status: status_
-                 , info: info
-                 , logs: logs
-                 , err: err
-                 });
+        res.json({
+            status: status_
+            , info: info
+            , logs: logs
+            , err: err
+        });
     }
 }
 
