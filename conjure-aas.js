@@ -87,7 +87,6 @@ function submitHandler(req, res) {
         , "--solutions-in-one-file"
         , "--copy-solutions=no"
     ].concat(conjureOptions)
-    log(`command: conjure ${conjureArgs.join(' ')}`)
     // run conjure
     let conjureSpawn = spawn("conjure", conjureArgs, { shell: true });
 
@@ -108,6 +107,7 @@ function submitHandler(req, res) {
     });
 
     log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions}`)
+    log(`submit ${appName} ${thisJobId} - command: conjure ${conjureArgs.join(' ')}`)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
