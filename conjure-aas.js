@@ -78,17 +78,18 @@ function submitHandler(req, res) {
         conjureOptions = req.body.conjure_options;
     }
 
+    let conjureArgs = ["solve"
+        , `conjure-output/${thisJobId}/model.essence`
+        , `conjure-output/${thisJobId}/data.json`
+        , "--output-directory", `conjure-output/${thisJobId}`
+        , "--solver", solver
+        , "--output-format=json"
+        , "--solutions-in-one-file"
+        , "--copy-solutions=no"
+    ].concat(conjureOptions)
+    log(`command: conjure ${conjureArgs.join(' ')}`)
     // run conjure
-    let conjureSpawn = spawn("conjure",
-        ["solve"
-            , `conjure-output/${thisJobId}/model.essence`
-            , `conjure-output/${thisJobId}/data.json`
-            , "--output-directory", `conjure-output/${thisJobId}`
-            , "--solver", solver
-            , "--output-format=json"
-            , "--solutions-in-one-file"
-            , "--copy-solutions=no"
-        ].concat(conjureOptions));
+    let conjureSpawn = spawn("conjure", conjureArgs);
 
     let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
     conjureSpawn.stdout.pipe(thisLogStream);
