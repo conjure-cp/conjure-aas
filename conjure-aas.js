@@ -89,7 +89,7 @@ function submitHandler(req, res) {
     ].concat(conjureOptions)
     log(`command: conjure ${conjureArgs.join(' ')}`)
     // run conjure
-    let conjureSpawn = spawn("conjure", conjureArgs);
+    let conjureSpawn = spawn("conjure", conjureArgs, { shell: true });
 
     let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
     conjureSpawn.stdout.pipe(thisLogStream);
@@ -107,7 +107,7 @@ function submitHandler(req, res) {
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - exitcode ${code}`);
     });
 
-    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions.join(' ')}`)
+    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions}`)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
