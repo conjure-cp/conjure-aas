@@ -178,6 +178,7 @@ function getHandler(req, res) {
     }
 }
 
+app.use("/", express.static("index.html"))
 app.post("/submit", submitHandler);
 app.post("/get", getHandler);
 
