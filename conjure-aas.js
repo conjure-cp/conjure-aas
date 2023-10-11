@@ -117,61 +117,77 @@ function getHandler(req, res) {
         appName = req.body.appName;
     }
 
-    // reading the logs
-    const logsFile = `conjure-output/${jobid}/logs.txt`;
-    let logs = "";
-    try {
-        logs = fs.readFileSync(logsFile, "utf8");
-        logs = logs.split("\n");
-    } catch (err) {
-        logs = err;
-    }
-
-    // reading the info file
-    const infoFile = `conjure-output/${jobid}/model000001-data.eprime-info`;
-    let info = "";
-    try {
-        info = fs.readFileSync(infoFile, "utf8");
-        let infoObj = {}
-        for (let line of info.split("\n")) {
-            let parts = line.split(":");
-            if (parts.length == 2) {
-                infoObj[parts[0]] = parts[1]
-            }
-        }
-        info = infoObj;
-    } catch (err) {
-        info = err;
-    }
+    let timeDifferenceInSecs = 0;
 
     // reading the status file
     const statusFile = `conjure-output/${jobid}/status.txt`;
     let status_ = "";
     try {
         status_ = fs.readFileSync(statusFile, "utf8");
+        let stats = fs.statSync(statusFile);
+        timeDifferenceInSecs = Math.abs(stats.mtime.getTime() - Date.now()) / 1000;
     } catch (err) {
         status_ = "not found";
     }
 
-    // reading the solution flie
-    const solutionFile = `conjure-output/${jobid}/model000001-data.solutions.json`;
-    try {
-        const solution = JSON.parse(fs.readFileSync(solutionFile));
-        log(`get ${appName} ${jobid} - ok`);
-        res.json({
-            status: "ok"
-            , solution: solution
-            , info: info
-            , logs: logs
-        });
-    } catch (err) {
-        log(`get ${appName} ${jobid} - ${status_}`);
-        res.json({
-            status: status_
-            , info: info
-            , logs: logs
-            , err: err
-        });
+    if (status_ == "not found" || timeDifferenceInSecs > 600) {
+
+        // doesn't exist or has expired.
+        // we serve the same response in either case
+        log(`get wontserve ${appName} ${jobid} - ${status_} - ${timeDifferenceInSecs}`);
+        res.json({ status: "unknown"});
+
+    } else {
+
+        // we can serve the response
+
+        // reading the logs
+        const logsFile = `conjure-output/${jobid}/logs.txt`;
+        let logs = "";
+        try {
+            logs = fs.readFileSync(logsFile, "utf8");
+            logs = logs.split("\n");
+        } catch (err) {
+            logs = err;
+        }
+
+        // reading the info file
+        const infoFile = `conjure-output/${jobid}/model000001-data.eprime-info`;
+        let info = "";
+        try {
+            info = fs.readFileSync(infoFile, "utf8");
+            let infoObj = {}
+            for (let line of info.split("\n")) {
+                let parts = line.split(":");
+                if (parts.length == 2) {
+                    infoObj[parts[0]] = parts[1]
+                }
+            }
+            info = infoObj;
+        } catch (err) {
+            info = err;
+        }
+
+        // reading the solution flie
+        const solutionFile = `conjure-output/${jobid}/model000001-data.solutions.json`;
+        try {
+            const solution = JSON.parse(fs.readFileSync(solutionFile));
+            log(`get ${appName} ${jobid} - ok`);
+            res.json({
+                status: "ok"
+                , solution: solution
+                , info: info
+                , logs: logs
+            });
+        } catch (err) {
+            log(`get ${appName} ${jobid} - ${status_}`);
+            res.json({
+                status: status_
+                , info: info
+                , logs: logs
+                , err: err
+            });
+        }
     }
 }
 
