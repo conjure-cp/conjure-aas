@@ -36,7 +36,7 @@
         window.onload = function () {
             let jobid = window.location.href.split("#")[1];
             if (jobid) {
-                document.getElementById('jobid').value = parseInt(jobid);
+                document.getElementById('jobid').value = jobid;
                 get();
             }
         }
@@ -48,7 +48,7 @@
     <div class="container">
         <h1>Conjure-aaS, get demo</h1>
         <label>Job ID:</label>
-        <input id="jobid" value="1" type="number">
+        <input id="jobid" size="40" value">
         <button type="button" class="btn btn-light" onclick="get()">Get</button>
         <pre id="response">Response placeholder</pre>
     </div>

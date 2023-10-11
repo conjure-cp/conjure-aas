@@ -2,6 +2,7 @@
 const fs = require("fs");
 const { spawn } = require("node:child_process");
 const md5 = require("md5");
+const { v4: uuidv4 } = require("uuid");
 
 const express = require("express");
 const cors = require('cors')
@@ -26,11 +27,7 @@ function log(message) {
 function submitHandler(req, res) {
 
     // next job id
-    // we are not locking this file, so there might be a clash here...
-    let config = fs.readFileSync("config.json");
-    config = JSON.parse(config);
-    let thisJobId = config.nextJobId++;
-    fs.writeFileSync("config.json", JSON.stringify(config));
+    let thisJobId = uuidv4();
 
     let appName = "unknown-app";
     if (req.body.appName !== undefined) {
