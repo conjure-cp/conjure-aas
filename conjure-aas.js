@@ -75,6 +75,8 @@ function submitHandler(req, res) {
         conjureOptions = req.body.conjure_options;
     }
 
+    // --------------------------------------------------------------------------------
+    // command for running without podman - just for logging
     let conjureArgs = ["solve"
         , `conjure-output/${thisJobId}/model.essence`
         , `conjure-output/${thisJobId}/data.json`
@@ -85,7 +87,28 @@ function submitHandler(req, res) {
         , "--copy-solutions=no"
     ].concat(conjureOptions)
     // run conjure
-    let conjureSpawn = spawn("conjure", conjureArgs, { shell: true });
+    // let conjureSpawn = spawn("conjure", conjureArgs, { shell: true });
+
+    // --------------------------------------------------------------------------------
+    // command for running with podman
+    let podmanArgs = ["run"
+        , "-it"
+        , "--rm"
+        , "--network=none"
+        , `-v $PWD/conjure-output/${thisJobId}:/outdir:z`
+        , "ghcr.io/conjure-cp/conjure:main"
+        , "conjure"
+        , "solve"
+        , "/outdir/model.essence"
+        , "/outdir/data.json"
+        , "--output-directory", "/outdir"
+        , "--solver", solver
+        , "--output-format=json"
+        , "--solutions-in-one-file"
+        , "--copy-solutions=no"
+    ].concat(conjureOptions)
+    // run conjure
+    let conjureSpawn = spawn("podman", podmanArgs, { shell: true });
 
     let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
     conjureSpawn.stdout.pipe(thisLogStream);
@@ -105,6 +128,7 @@ function submitHandler(req, res) {
 
     log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions}`)
     log(`submit ${appName} ${thisJobId} - command: conjure ${conjureArgs.join(' ')}`)
+    log(`submit ${appName} ${thisJobId} - command: podman ${podmanArgs.join(' ')}`)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
@@ -135,7 +159,7 @@ function getHandler(req, res) {
         // doesn't exist or has expired.
         // we serve the same response in either case
         log(`get wontserve ${appName} ${jobid} - ${status_} - ${timeDifferenceInSecs}`);
-        res.json({ status: "unknown"});
+        res.json({ status: "unknown" });
 
     } else {
 
