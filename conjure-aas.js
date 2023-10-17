@@ -170,7 +170,7 @@ function getHandler(req, res) {
         let logs = "";
         try {
             logs = fs.readFileSync(logsFile, "utf8");
-            logs = logs.split("\n");
+            logs = logs.split(/\r?\n/);
         } catch (err) {
             logs = err;
         }
