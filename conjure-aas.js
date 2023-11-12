@@ -96,7 +96,7 @@ function submitHandler(req, res) {
         , "--rm"
         , "--network=none"
         , `-v $PWD/conjure-output/${thisJobId}:/outdir:z`
-        , "ghcr.io/conjure-cp/conjure:main"
+        , "ghcr.io/conjure-cp/conjure:latest"
         , "conjure"
         , "solve"
         , "/outdir/model.essence"
