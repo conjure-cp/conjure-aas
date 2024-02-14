@@ -70,14 +70,14 @@ class ConjureClient {
                 this._poll(jobid)
                     .then(res => {
                         if (res.status == "wait") {
-                            setTimeout(poll, 1000); // Poll every second
+                            setTimeout(poll, 2000); // Poll every second
                         } else {
                             resolve(res);
                         }
                     })
                     .catch(err => reject(err));
             }
-            setTimeout(poll, 600);
+            setTimeout(poll, 2000);
         });
     }
 }
