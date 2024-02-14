@@ -77,7 +77,7 @@ class ConjureClient {
                     })
                     .catch(err => reject(err));
             }
-            setTimeout(poll, 1000); // TODO: Minimum solving time
+            setTimeout(poll, 600);
         });
     }
 }
