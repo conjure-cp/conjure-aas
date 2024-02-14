@@ -38,29 +38,34 @@
         }
     </script>
 
+    <style>
+        textarea { font-family: Consolas, Lucida Console, monospace; }
+    </style>
+
 </head>
 
 <body>
     <div class="container">
+
         <h1>Conjure-aaS, solve demo</h1>
-        <h2>Essence model:</h2>
-        <textarea id="model" rows="10" cols="80">
+
+        <h2>Essence model</h2>
+        <textarea id="model" rows="10" cols="100">
 given n, m : int
 find x : int(0..9)
 such that x >= n, x <= m
 </textarea>
-        <h2>Data, in JSON:</h2>
-        <textarea id="data" rows="10" cols="80">
+
+        <h2>Data, in JSON</h2>
+        <textarea id="data" rows="10" cols="100">
 { "n": 2
 , "m": 7
 }
 </textarea>
 
-        <br />
+        <h2>Response, in JSON <button type="button" class="btn btn-light" onclick="solve()">Submit</button></h2>
+        <textarea id="solution" rows="10" cols="100" readonly></textarea>
 
-        <button type="button" class="btn btn-light" onclick="solve()">Submit</button>
-
-        <pre id="solution">Solution placeholder</pre>
     </div>
 </body>
 
