@@ -18,19 +18,23 @@ class ConjureClient {
 
     /**
      * Submits the given Essence string to the service and returns the solution.
-     * @param {string} model 
-     * @param {object | string} data Optional data to be included, e.g. variable assignments.
-     * @param {string} solver For a list of solvers see the {@link https://conjure.readthedocs.io/en/latest/features.html#multiple-target-solvers documentation}.
-     * @param {[string]} options An ordered list of command-line options to pass to Conjure.
+     * @param {string} model The Essence model to solve.
+     * @param {Object} params An object containing optional parameters.
+     * @param {string | Object} params.data An object to pass as data to the solver.
+     * @param {string} params.solver For a list of solvers see the {@link https://conjure.readthedocs.io/en/latest/features.html#multiple-target-solvers documentation}.
+     * @param {[string]} params.options An array of command-line options to pass to Conjure.
      * @returns A `Promise` that resolves to a solution object.
      */
-    solve(model, data = {}, solver = "kissat", options = []) {
+    solve(model, params={}) {
+        const solver = params.solver || "kissat";
+        const options = params.options || [];
+        const data = params.data || {};
         const data_str = typeof data === "string" ? data : JSON.stringify(data);
         return this._submit(model, data_str, solver, options)
             .then(jobid => this._get(jobid));
     }
 
-    _submit(model, data_str = "{}", solver = "kissat", options = []) {
+    _submit(model, data_str, solver, options) {
         return new Promise((resolve, reject) => {
             fetch(`${this.domain}/submit`, {
                 method: 'POST', headers: {
