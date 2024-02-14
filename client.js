@@ -18,28 +18,28 @@ class ConjureClient {
 
     /**
      * Submits the given Essence string to the service and returns the solution.
-     * @param {string} essence 
+     * @param {string} model 
      * @param {*} data Optional data to be included, e.g. variable assignments.
-     * @param {"kissat"|"minion"|TODO} solver The solver to use.
-     * @param {[string]} options Additional options to pass to Conjure.
+     * @param {string} solver For a list of solvers see the {@link https://conjure.readthedocs.io/en/latest/features.html#multiple-target-solvers documentation}.
+     * @param {[string]} options An ordered list of command-line options to pass to Conjure, e.g. ["--number-of-solutions", "1"]
      * @returns A `Promise` that resolves to a solution object.
      */
-    solve(essence, data = {}, solver = "kissat", options = []) {
-        return this._submit(essence, data, solver, options)
+    solve(model, data = {}, solver = "kissat", options = []) {
+        return this._submit(model, data, solver, options)
             .then(jobid => this._get(jobid));
     }
 
-    _submit(essence, data = {}, solver = "kissat", options = []) {
+    _submit(model, data = {}, solver = "kissat", options = []) {
         return new Promise((resolve, reject) => {
             fetch(`${this.domain}/submit`, {
                 method: 'POST', headers: {
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
                     appName: this.appName,
-                    solver: solver,
-                    model: essence,
-                    data: data,
-                    conjureOptions: options
+                    solver,
+                    model,
+                    data,
+                    conjureOptions: options,
                 })
             })
                 .then(response => response.json())
@@ -55,7 +55,7 @@ class ConjureClient {
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
                     appName: this.appName,
-                    jobid: jobid
+                    jobid,
                 })
             })
                 .then(response => response.json())
