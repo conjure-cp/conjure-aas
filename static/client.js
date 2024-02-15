@@ -1,4 +1,5 @@
 const _DEFAULT_DOMAIN = "https://conjure-aas.cs.st-andrews.ac.uk"
+const _LUBY_GEN = luby();
 
 /**
  * A client for the Conjure AAS API.
@@ -79,5 +80,25 @@ class ConjureClient {
             }
             setTimeout(poll, 2000);
         });
+    }
+}
+
+/**
+ * A generator for a Luby sequence with a growth rate of 2.
+ */
+function* luby() {
+    let seq = [1];
+    for (let i = 1;; i++) {
+        seq[i] = _luby(i, seq);
+        yield seq[i];
+    }
+}
+
+function _luby(i, seq) {
+    for (let k = 1;; k++) {
+        if (i == 2 ** k - 1)
+            return 2 **  (k - 1);
+        if ((2 ** (k - 1)) <= i && i < 2 ** k - 1)
+            return seq[i - 2 ** (k - 1) + 1];
     }
 }
