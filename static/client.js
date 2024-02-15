@@ -1,5 +1,6 @@
 const _DEFAULT_DOMAIN = "https://conjure-aas.cs.st-andrews.ac.uk"
 const _LUBY_GEN = luby();
+const _LUBY_MULT = 1000; // Multiplier for the number of milliseconds to wait between polls
 
 /**
  * A client for the Conjure AAS API.
@@ -70,15 +71,16 @@ class ConjureClient {
             let poll = () => {
                 this._poll(jobid)
                     .then(res => {
-                        if (res.status == "wait") {
-                            setTimeout(poll, 2000); // Poll every second
+                        if (true) { // res.status == "wait"
+                            console.log("wait")
+                            setTimeout(poll, _LUBY_GEN.next().value * _LUBY_MULT); // Poll every second
                         } else {
                             resolve(res);
                         }
                     })
                     .catch(err => reject(err));
             }
-            setTimeout(poll, 2000);
+            setTimeout(poll, _LUBY_GEN.next().value * _LUBY_MULT);
         });
     }
 }
