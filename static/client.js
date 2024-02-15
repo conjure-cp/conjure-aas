@@ -71,7 +71,7 @@ class ConjureClient {
             let poll = () => {
                 this._poll(jobid)
                     .then(res => {
-                        if (true) { // res.status == "wait"
+                        if (res.status == "wait") {
                             console.log("wait")
                             setTimeout(poll, _LUBY_GEN.next().value * _LUBY_MULT); // Poll every second
                         } else {
