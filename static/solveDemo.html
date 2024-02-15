@@ -28,6 +28,9 @@
         const client = new ConjureClient("solve-demo");
 
         function solve() {
+            $("#submit").prop("disabled", true);
+            $("#submit-text").text("Loading...");
+
             const model = document.getElementById('model').value;
             const data = document.getElementById('data').value;
 
@@ -37,37 +40,55 @@
                 options: ["--number-of-solutions", "1"]
             }).then(response => {
                 document.getElementById("solution").innerHTML = JSON.stringify(response, undefined, 2);
+
+                $("#submit").prop("disabled", false);
+                $("#submit-text").text("Submit");
+            }).catch(error => {
+                document.getElementById("solution").innerHTML = "ERROR: " + error;
+
+                $("#submit").prop("disabled", false);
+                $("#submit-text").text("Submit");
             });
         }
     </script>
 
     <style>
         textarea { font-family: Consolas, Lucida Console, monospace; }
+        button .spinner-border { display: none }
+        button[disabled] .spinner-border { display: inline-block }
     </style>
 
 </head>
 
 <body>
-    <div class="container">
+    <div class="container py-3">
 
         <h1>Conjure-aaS, solve demo</h1>
 
-        <h2>Essence model</h2>
-        <textarea id="model" rows="10" cols="100">
+        <hr>
+
+        <h3>Model (Essence)</h3>
+        <textarea class="w-100" id="model" rows="10">
 given n, m : int
 find x : int(0..9)
 such that x >= n, x <= m
 </textarea>
 
-        <h2>Data, in JSON</h2>
-        <textarea id="data" rows="10" cols="100">
-{ "n": 2
-, "m": 7
+        <h3 class="mt-3">Data (JSON)</h3>
+        <textarea class="w-100" id="data" rows="10">
+{
+  "n": 2,
+  "m": 7
 }
 </textarea>
 
-        <h2>Response, in JSON <button type="button" class="btn btn-light" onclick="solve()">Submit</button></h2>
-        <textarea id="solution" rows="10" cols="100" readonly></textarea>
+        <button class="btn btn-primary my-3" id="submit" type="button" onclick="solve()">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span id="submit-text">Submit</span>
+        </button>
+
+        <h3>Response (JSON)</h3>
+        <textarea class="w-100" id="solution" rows="10" readonly></textarea>
 
     </div>
 </body>
