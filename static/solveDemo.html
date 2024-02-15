@@ -67,25 +67,20 @@
 
         <hr>
 
-        <div class="row">
-            <div class="col-xl">
-                <h3>Model (Essence)</h3>
-                <textarea class="w-100" id="model" rows="10">
+        <h3>Model (Essence)</h3>
+        <textarea class="w-100" id="model" rows="10">
 given n, m : int
 find x : int(0..9)
 such that x >= n, x <= m
 </textarea>
-            </div>
-            <div class="col-xl mt-xl-0 mt-3">
-                <h3>Data (JSON)</h3>
-                <textarea class="w-100" id="data" rows="10">
+
+        <h3 class="mt-3">Data (JSON)</h3>
+        <textarea class="w-100" id="data" rows="10">
 {
   "n": 2,
   "m": 7
 }
 </textarea>
-            </div>
-        </div>
 
         <button class="btn btn-primary my-3" id="submit" type="button" onclick="solve()">
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
