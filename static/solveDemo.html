@@ -41,8 +41,13 @@
             }).then(response => {
                 document.getElementById("solution").innerHTML = JSON.stringify(response, undefined, 2);
 
-                    $("#submit").prop("disabled", false);
-                    $("#submit-text").text("Submit");
+                $("#submit").prop("disabled", false);
+                $("#submit-text").text("Submit");
+            }).catch(error => {
+                document.getElementById("solution").innerHTML = "ERROR: " + error;
+
+                $("#submit").prop("disabled", false);
+                $("#submit-text").text("Submit");
             });
         }
     </script>
