@@ -31,10 +31,13 @@
             const model = document.getElementById('model').value;
             const data = document.getElementById('data').value;
 
-            client.solve(model, data, solver="kissat", options=["--number-of-solutions", "1"])
-                .then(response => {
-                    document.getElementById("solution").innerHTML = JSON.stringify(response, undefined, 2);
-                });
+            client.solve(model, {
+                data,
+                solver: "kissat",
+                options: ["--number-of-solutions", "1"]
+            }).then(response => {
+                document.getElementById("solution").innerHTML = JSON.stringify(response, undefined, 2);
+            });
         }
     </script>
 
