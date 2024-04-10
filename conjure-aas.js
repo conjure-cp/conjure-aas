@@ -92,7 +92,6 @@ function submitHandler(req, res) {
     // --------------------------------------------------------------------------------
     // command for running with podman
     let podmanArgs = ["run"
-        , "-it"
         , "--rm"
         , "--network=none"
         , `-v $PWD/conjure-output/${thisJobId}:/outdir:z`
@@ -107,6 +106,7 @@ function submitHandler(req, res) {
         , "--solutions-in-one-file"
         , "--copy-solutions=no"
     ].concat(conjureOptions)
+
     // run conjure
     let conjureSpawn = spawn("podman", podmanArgs, { shell: true });
 
