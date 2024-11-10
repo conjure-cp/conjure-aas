@@ -39,6 +39,10 @@ function submitHandler(req, res) {
     // create directory
     fs.mkdirSync(`conjure-output/${thisJobId}`, { recursive: true });
 
+    if (req.body.metadata !== undefined && req.body.metadata !== "") {
+        fs.writeFileSync(`conjure-output/${thisJobId}/metadata.json`, req.body.metadata);
+    }
+
     // we cache the essence + eprime in a model-cache to avoid rerunning conjure-modelling
     let cacheKey = md5(req.body.model.trim());
     let cacheHit = false;

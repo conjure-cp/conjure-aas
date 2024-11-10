@@ -30,13 +30,15 @@ class ConjureClient {
     solve(model, params={}) {
         const solver = params.solver || "kissat";
         const options = params.options || [];
+        const metadata = params.metadata || "";
+        const metadata_str = typeof metadata === "string" ? metadata : JSON.stringify(metadata);
         const data = params.data || {};
         const data_str = typeof data === "string" ? data : JSON.stringify(data);
-        return this._submit(model, data_str, solver, options)
+        return this._submit(model, data_str, solver, options, metadata_str)
             .then(jobid => this._get(jobid));
     }
 
-    _submit(model, data_str, solver, options) {
+    _submit(model, data_str, solver, options, metadata) {
         return new Promise((resolve, reject) => {
             fetch(`${this.domain}/submit`, {
                 method: 'POST', headers: {
@@ -47,6 +49,7 @@ class ConjureClient {
                     model,
                     data: data_str,
                     conjureOptions: options,
+                    metadata: metadata
                 })
             })
                 .then(response => response.json())
