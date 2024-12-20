@@ -36,7 +36,7 @@
 
             client.solve(model, {
                 data,
-                solver: "kissat",
+                solver: "or-tools",
                 options: ["--number-of-solutions", "1"]
             }).then(response => {
                 document.getElementById("solution").innerHTML = JSON.stringify(response, undefined, 2);
