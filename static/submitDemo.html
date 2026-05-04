@@ -25,7 +25,7 @@
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
                     appName: "demo", // so we know who is calling
-                    solver: "kissat", // this is optional
+                    solver: "or-tools", // this is optional
                     model: document.getElementById('model').value,
                     data: document.getElementById('data').value,
                     conjureOptions: ["--number-of-solutions", "1"] // 1 is the default anyway
