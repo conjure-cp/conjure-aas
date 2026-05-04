@@ -1,9 +1,9 @@
 
 const fs = require("fs");
 const path = require("node:path");
+const { randomUUID } = require("node:crypto");
 const { spawn } = require("node:child_process");
 const md5 = require("md5");
-const { v4: uuidv4 } = require("uuid");
 
 const express = require("express");
 const cors = require('cors')
@@ -78,7 +78,7 @@ function getNamedModelOptions(reqBody) {
 function submitHandler(req, res) {
 
     // next job id
-    let thisJobId = uuidv4();
+    let thisJobId = randomUUID();
 
     let appName = "unknown-app";
     if (req.body.appName !== undefined) {
