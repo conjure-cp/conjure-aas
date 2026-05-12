@@ -1,8 +1,13 @@
 {
+  "scripts": {
+    "check": "node --check conjure-aas.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "md5": "^2.3.0",
-    "uuid": "^13.0.0"
+    "md5": "^2.3.0"
   }
 }

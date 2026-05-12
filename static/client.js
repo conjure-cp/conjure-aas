@@ -38,6 +38,23 @@ class ConjureClient {
             .then(jobid => this._get(jobid));
     }
 
+    /**
+     * Runs a named Python solver from custom/<modelName>.py and returns its JSON solution.
+     * @param {string} modelName The named solver to run.
+     * @param {Object|string} input JSON input to pass to the solver.
+     * @param {Object} params An object containing optional parameters.
+     * @param {[string]} params.options An array of command-line options to pass to the named solver.
+     * @returns A `Promise` that resolves to a solution object.
+     */
+    solveNamed(modelName, input={}, params={}) {
+        const options = params.options || [];
+        const metadata = params.metadata || "";
+        const metadata_str = typeof metadata === "string" ? metadata : JSON.stringify(metadata);
+        const input_str = typeof input === "string" ? input : JSON.stringify(input);
+        return this._submitNamed(modelName, input_str, options, metadata_str)
+            .then(jobid => this._get(jobid));
+    }
+
     _submit(model, data_str, solver, options, metadata) {
         return new Promise((resolve, reject) => {
             fetch(`${this.domain}/submit`, {
@@ -49,6 +66,25 @@ class ConjureClient {
                     model,
                     data: data_str,
                     conjureOptions: options,
+                    metadata: metadata
+                })
+            })
+                .then(response => response.json())
+                .then(json => resolve(json.jobid))
+                .catch(err => reject(err))
+        });
+    }
+
+    _submitNamed(modelName, input_str, options, metadata) {
+        return new Promise((resolve, reject) => {
+            fetch(`${this.domain}/submit`, {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json'
+                }, body: JSON.stringify({
+                    appName: this.appName,
+                    modelName,
+                    input: input_str,
+                    solverOptions: options,
                     metadata: metadata
                 })
             })

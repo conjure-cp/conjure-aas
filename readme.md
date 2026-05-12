@@ -40,3 +40,45 @@ client.solve("given m: int, find x: int(1..3) such that x > m", {
     options: ["--number-of-solutions", "1"],
 }).then(result => console.log(result.solution));
 ```
+
+## Named Python Solvers
+
+In addition to Essence models, the service can run named Python solvers from the `custom` directory. A request with `modelName: "rostering"` runs:
+
+```bash
+python3 custom/rostering.py conjure-output/<jobid>/input.json --output conjure-output/<jobid>/solution.json
+```
+
+The solver should write logs to stdout/stderr and write its JSON solution to the path supplied after `--output`. The existing `/get` endpoint returns that JSON as `solution`, alongside the captured logs.
+
+Additional command-line arguments can be passed with `solverOptions`:
+
+```bash
+python3 custom/rostering.py conjure-output/<jobid>/input.json --output conjure-output/<jobid>/solution.json --time-limit 60
+```
+
+The named solver API accepts JSON input as either `input` or `data`:
+
+```js
+fetch("/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        appName: "example-app",
+        modelName: "rostering",
+        input: { users: [], shifts: [] },
+        solverOptions: ["--time-limit", "60"],
+    }),
+});
+```
+
+The JavaScript client exposes the same path with `solveNamed`:
+
+```js
+const client = new ConjureClient("example-app");
+
+client.solveNamed("rostering", { users: [], shifts: [] }, {
+    options: ["--time-limit", "60"],
+})
+    .then(result => console.log(result.solution));
+```
