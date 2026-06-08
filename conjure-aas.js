@@ -20,6 +20,7 @@ fs.mkdirSync("custom", { recursive: true });
 let logStream = fs.createWriteStream("logs.txt", { flags: "a" });
 
 
+// Write a timestamped service log line to stdout and the global log file.
 function log(message) {
     let timestamp = new Date().toISOString();
     const line = `${timestamp} ${message}`;
@@ -28,6 +29,7 @@ function log(message) {
     return line;
 }
 
+// Mirror a service log line into the job-specific log file when it exists.
 function logJob(jobid, message) {
     const line = log(message);
     try {
@@ -37,10 +39,12 @@ function logJob(jobid, message) {
     }
 }
 
+// Return the requested custom solver name, accepting legacy field aliases.
 function getNamedModel(reqBody) {
     return reqBody.modelName || reqBody.namedModel || reqBody.customModel || "";
 }
 
+// Validate a custom solver name and resolve it under custom/<name>.py.
 function validateNamedModel(modelName) {
     if (typeof modelName !== "string" || !/^[A-Za-z0-9_-]+$/.test(modelName)) {
         throw new Error("named model must contain only letters, numbers, underscores, and hyphens");
@@ -49,6 +53,7 @@ function validateNamedModel(modelName) {
     return path.join("custom", `${modelName}.py`);
 }
 
+// Persist request input as JSON, preserving already-serialised JSON strings.
 function writeJsonInput(inputFile, data) {
     if (typeof data === "string") {
         fs.writeFileSync(inputFile, data);
@@ -57,6 +62,7 @@ function writeJsonInput(inputFile, data) {
     }
 }
 
+// Pick the JSON payload to pass through to a named custom solver.
 function getNamedModelInput(reqBody) {
     if (reqBody.input !== undefined) {
         return reqBody.input;
@@ -67,6 +73,7 @@ function getNamedModelInput(reqBody) {
     return reqBody;
 }
 
+// Return additional command-line options for named custom solvers.
 function getNamedModelOptions(reqBody) {
     if (reqBody.solverOptions !== undefined) {
         return reqBody.solverOptions;
@@ -86,6 +93,7 @@ function getNamedModelOptions(reqBody) {
     return [];
 }
 
+// Handle job submission for either Essence models or named custom solvers.
 function submitHandler(req, res) {
 
     // next job id
@@ -209,6 +217,7 @@ function submitHandler(req, res) {
     res.json({ jobid: thisJobId });
 }
 
+// Run custom/<name>.py with the submitted JSON input and expected solution path.
 function submitNamedModel(req, res, thisJobId, appName, namedModel) {
     let modelPath = "";
     try {
@@ -264,6 +273,7 @@ function submitNamedModel(req, res, thisJobId, appName, namedModel) {
     res.json({ jobid: thisJobId });
 }
 
+// Return job status, logs, solver info, and solution JSON when available.
 function getHandler(req, res) {
     let jobid = req.body.jobid;
 
