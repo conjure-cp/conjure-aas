@@ -6,6 +6,8 @@ Hosted at https://conjure-aas.cs.st-andrews.ac.uk
 
 It is running on a small VM at the School of Computer Science, University of St Andrews. Do not expect the best performance...
 
+To run your own instance, install the Node.js dependencies before running the service: `npm install` and run `node conjure-aas.js`
+
 ## Conjure Client
 
 This API provides a front-end JS client to allow developers to submit jobs through a simple interface.
