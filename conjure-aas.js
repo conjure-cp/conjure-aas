@@ -160,7 +160,7 @@ function submitHandler(req, res) {
     let podmanArgs = ["run"
         , "--rm"
         , "--network=none"
-        , `-v $PWD/conjure-output/${thisJobId}:/outdir:z`
+        , "-v", `${process.cwd()}/conjure-output/${thisJobId}:/outdir:z`
         , "ghcr.io/conjure-cp/conjure@sha256:c0ae2d6a9681e63604d4327730b2882c58b30b2e5e5d14770697e8a738c0b745"
         , "conjure"
         , "solve"
@@ -174,7 +174,7 @@ function submitHandler(req, res) {
     ].concat(conjureOptions)
 
     // run conjure
-    let conjureSpawn = spawn("podman", podmanArgs, { shell: true });
+    let conjureSpawn = spawn("podman", podmanArgs);
 
     let thisLogStream = fs.createWriteStream(`conjure-output/${thisJobId}/logs.txt`, { flags: "a" });
     conjureSpawn.stdout.pipe(thisLogStream);
