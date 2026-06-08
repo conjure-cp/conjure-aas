@@ -20,16 +20,34 @@ fs.mkdirSync("custom", { recursive: true });
 let logStream = fs.createWriteStream("logs.txt", { flags: "a" });
 
 
-function log(message) {
-    let timestamp = new Date().toISOString();
-    logStream.write(`${timestamp} ${message}\n`);
-    console.log(`${timestamp} ${message}`);
+// Write one formatted log line to stdout, the global log, and optionally a job log.
+function writeLogLine(line, jobid) {
+    logStream.write(`${line}\n`);
+    console.log(line);
+
+    if (jobid === undefined) {
+        return;
+    }
+
+    try {
+        fs.appendFileSync(`conjure-output/${jobid}/logs.txt`, `${line}\n`);
+    } catch (err) {
+        // Some get requests refer to unknown or expired jobs with no job log file.
+    }
 }
 
+// Format and write a timestamped service log message.
+function log(message, jobid) {
+    let timestamp = new Date().toISOString();
+    writeLogLine(`${timestamp} ${message}`, jobid);
+}
+
+// Return the requested custom solver name, accepting legacy field aliases.
 function getNamedModel(reqBody) {
     return reqBody.modelName || reqBody.namedModel || reqBody.customModel || "";
 }
 
+// Validate a custom solver name and resolve it under custom/<name>.py.
 function validateNamedModel(modelName) {
     if (typeof modelName !== "string" || !/^[A-Za-z0-9_-]+$/.test(modelName)) {
         throw new Error("named model must contain only letters, numbers, underscores, and hyphens");
@@ -38,6 +56,7 @@ function validateNamedModel(modelName) {
     return path.join("custom", `${modelName}.py`);
 }
 
+// Persist request input as JSON, preserving already-serialised JSON strings.
 function writeJsonInput(inputFile, data) {
     if (typeof data === "string") {
         fs.writeFileSync(inputFile, data);
@@ -46,6 +65,7 @@ function writeJsonInput(inputFile, data) {
     }
 }
 
+// Pick the JSON payload to pass through to a named custom solver.
 function getNamedModelInput(reqBody) {
     if (reqBody.input !== undefined) {
         return reqBody.input;
@@ -56,6 +76,7 @@ function getNamedModelInput(reqBody) {
     return reqBody;
 }
 
+// Return additional command-line options for named custom solvers.
 function getNamedModelOptions(reqBody) {
     if (reqBody.solverOptions !== undefined) {
         return reqBody.solverOptions;
@@ -75,6 +96,7 @@ function getNamedModelOptions(reqBody) {
     return [];
 }
 
+// Handle job submission for either Essence models or named custom solvers.
 function submitHandler(req, res) {
 
     // next job id
@@ -85,10 +107,9 @@ function submitHandler(req, res) {
         appName = req.body.appName;
     }
 
-    log(`submit ${appName} ${thisJobId}`)
-
     // create directory
     fs.mkdirSync(`conjure-output/${thisJobId}`, { recursive: true });
+    log(`submit ${appName} ${thisJobId}`, thisJobId)
 
     if (req.body.metadata !== undefined && req.body.metadata !== "") {
         fs.writeFileSync(`conjure-output/${thisJobId}/metadata.json`, req.body.metadata);
@@ -101,6 +122,7 @@ function submitHandler(req, res) {
 
     if (req.body.model === undefined) {
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, "terminated - missing model");
+        log(`submit ${appName} ${thisJobId} - missing model`, thisJobId);
         res.status(400).json({ error: "missing model or modelName" });
         return;
     }
@@ -115,10 +137,10 @@ function submitHandler(req, res) {
         fs.copyFileSync(`model-cache/${cacheKey}.conjure-checksum`, `conjure-output/${thisJobId}/.conjure-checksum`);
         fs.copyFileSync(`model-cache/${cacheKey}.essence`, `conjure-output/${thisJobId}/model.essence`);
         fs.copyFileSync(`model-cache/${cacheKey}.eprime`, `conjure-output/${thisJobId}/model000001.eprime`);
-        log(`submit ${appName} ${thisJobId} - cache hit ${cacheKey}`);
+        log(`submit ${appName} ${thisJobId} - cache hit ${cacheKey}`, thisJobId);
         cacheHit = true;
     } catch (e) {
-        log(`submit ${appName} ${thisJobId} - cache miss ${cacheKey}`);
+        log(`submit ${appName} ${thisJobId} - cache miss ${cacheKey}`, thisJobId);
         fs.writeFileSync(`conjure-output/${thisJobId}/model.essence`, req.body.model);
         cacheHit = false;
     }
@@ -185,32 +207,34 @@ function submitHandler(req, res) {
             fs.copyFileSync(`conjure-output/${thisJobId}/.conjure-checksum`, `model-cache/${cacheKey}.conjure-checksum`);
             fs.copyFileSync(`conjure-output/${thisJobId}/model.essence`, `model-cache/${cacheKey}.essence`);
             fs.copyFileSync(`conjure-output/${thisJobId}/model000001.eprime`, `model-cache/${cacheKey}.eprime`);
-            log(`submit ${appName} ${thisJobId} - cache populated ${cacheKey}`);
+            log(`submit ${appName} ${thisJobId} - cache populated ${cacheKey}`, thisJobId);
         }
-        log(`submit ${appName} ${thisJobId} - exitcode ${code}`);
-        thisLogStream.write(`submit ${thisJobId} - exitcode ${code}\n`);
+        log(`submit ${appName} ${thisJobId} - exitcode ${code}`, thisJobId);
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - exitcode ${code}`);
     });
 
-    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions}`)
-    log(`submit ${appName} ${thisJobId} - command: conjure ${conjureArgs.join(' ')}`)
-    log(`submit ${appName} ${thisJobId} - command: podman ${podmanArgs.join(' ')}`)
+    log(`submit ${appName} ${thisJobId} - spawned with options: ${conjureOptions}`, thisJobId)
+    log(`submit ${appName} ${thisJobId} - command: conjure ${conjureArgs.join(' ')}`, thisJobId)
+    log(`submit ${appName} ${thisJobId} - command: podman ${podmanArgs.join(' ')}`, thisJobId)
     fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
 
+// Run custom/<name>.py with the submitted JSON input and expected solution path.
 function submitNamedModel(req, res, thisJobId, appName, namedModel) {
     let modelPath = "";
     try {
         modelPath = validateNamedModel(namedModel);
     } catch (err) {
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - ${err.message}`);
+        log(`submit ${appName} ${thisJobId} - ${err.message}`, thisJobId);
         res.status(400).json({ error: err.message });
         return;
     }
 
     if (!fs.existsSync(modelPath)) {
         fs.writeFileSync(`conjure-output/${thisJobId}/status.txt`, `terminated - named model not found: ${namedModel}`);
+        log(`submit ${appName} ${thisJobId} - named model not found: ${namedModel}`, thisJobId);
         res.status(404).json({ error: `named model not found: ${namedModel}` });
         return;
     }
@@ -222,6 +246,7 @@ function submitNamedModel(req, res, thisJobId, appName, namedModel) {
 
     if (!Array.isArray(solverOptions)) {
         fs.writeFileSync(`${jobDir}/status.txt`, "terminated - solver options must be an array");
+        log(`submit ${appName} ${thisJobId} - solver options must be an array`, thisJobId);
         res.status(400).json({ error: "solver options must be an array" });
         return;
     }
@@ -236,23 +261,22 @@ function submitNamedModel(req, res, thisJobId, appName, namedModel) {
     solverSpawn.stdout.pipe(thisLogStream);
     solverSpawn.stderr.pipe(thisLogStream);
     solverSpawn.on("error", (err) => {
-        log(`submit ${appName} ${thisJobId} - named model ${namedModel} failed to start: ${err.message}`);
-        thisLogStream.write(`submit ${thisJobId} - named model ${namedModel} failed to start: ${err.message}\n`);
+        log(`submit ${appName} ${thisJobId} - named model ${namedModel} failed to start: ${err.message}`, thisJobId);
         fs.writeFileSync(`${jobDir}/status.txt`, `terminated - ${err.message}`);
     });
     solverSpawn.on("close", (code) => {
-        log(`submit ${appName} ${thisJobId} - named model ${namedModel} exitcode ${code}`);
-        thisLogStream.write(`submit ${thisJobId} - named model ${namedModel} exitcode ${code}\n`);
+        log(`submit ${appName} ${thisJobId} - named model ${namedModel} exitcode ${code}`, thisJobId);
         fs.writeFileSync(`${jobDir}/status.txt`, `terminated - exitcode ${code}`);
     });
 
-    log(`submit ${appName} ${thisJobId} - named model ${namedModel}`);
-    log(`submit ${appName} ${thisJobId} - spawned with options: ${solverOptions}`);
-    log(`submit ${appName} ${thisJobId} - command: python3 ${solverArgs.join(' ')}`);
+    log(`submit ${appName} ${thisJobId} - named model ${namedModel}`, thisJobId);
+    log(`submit ${appName} ${thisJobId} - spawned with options: ${solverOptions}`, thisJobId);
+    log(`submit ${appName} ${thisJobId} - command: python3 ${solverArgs.join(' ')}`, thisJobId);
     fs.writeFileSync(`${jobDir}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
 
+// Return job status, logs, solver info, and solution JSON when available.
 function getHandler(req, res) {
     let jobid = req.body.jobid;
 
@@ -278,7 +302,7 @@ function getHandler(req, res) {
 
         // doesn't exist or has expired.
         // we serve the same response in either case
-        log(`get wontserve ${appName} ${jobid} - ${status_} - ${timeDifferenceInSecs}`);
+        log(`get wontserve ${appName} ${jobid} - ${status_} - ${timeDifferenceInSecs}`, jobid);
         res.json({ status: "unknown" });
 
     } else {
@@ -325,7 +349,7 @@ function getHandler(req, res) {
         // reading the solution file
         try {
             const solution = JSON.parse(fs.readFileSync(solutionFile));
-            log(`get ${appName} ${jobid} - ok`);
+            log(`get ${appName} ${jobid} - ok`, jobid);
             res.json({
                 status: "ok"
                 , solution: solution
@@ -333,7 +357,7 @@ function getHandler(req, res) {
                 , logs: logs
             });
         } catch (err) {
-            log(`get ${appName} ${jobid} - ${status_}`);
+            log(`get ${appName} ${jobid} - ${status_}`, jobid);
             res.json({
                 status: status_
                 , info: info
