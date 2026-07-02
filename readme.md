@@ -42,3 +42,30 @@ client.solve("given m: int, find x: int(1..3) such that x > m", {
     options: ["--number-of-solutions", "1"],
 }).then(result => console.log(result.solution));
 ```
+
+## Custom Python solvers
+
+Named solvers live as `custom/<name>.py`. Submit with `modelName` (not Conjure `model`):
+
+```js
+client.solveNamed("my-solver", {})
+```
+
+The service runs:
+
+```bash
+python3 custom/<name>.py <jobdir>/input.json --output <jobdir>/solution.json [solverOptions...]
+```
+
+### Per-solver virtualenv (optional)
+
+Each named solver may have its own dependencies under `custom/<name>/venv/`. If that venv exists, conjure-aas uses its Python instead of system `python3`:
+
+```bash
+mkdir -p custom/my-solver
+cp my_solver.py custom/my-solver.py
+python3 -m venv custom/my-solver/venv
+custom/my-solver/venv/bin/pip install -r requirements.txt
+```
+
+Optional `custom/<name>/requirements.txt` is not installed automatically; create and populate the venv before submitting jobs.

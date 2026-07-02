@@ -56,6 +56,16 @@ function validateNamedModel(modelName) {
     return path.join("custom", `${modelName}.py`);
 }
 
+// Optional per-solver venv: custom/<name>/venv/bin/python (or Scripts/python.exe on Windows).
+function resolveNamedModelPython(namedModel) {
+    const venvUnix = path.join("custom", namedModel, "venv", "bin", "python");
+    if (fs.existsSync(venvUnix)) {
+        return venvUnix;
+    }
+
+    return "python3";
+}
+
 // Persist request input as JSON, preserving already-serialised JSON strings.
 function writeJsonInput(inputFile, data) {
     if (typeof data === "string") {
@@ -254,8 +264,9 @@ function submitNamedModel(req, res, thisJobId, appName, namedModel) {
     writeJsonInput(inputFile, getNamedModelInput(req.body));
     fs.writeFileSync(`${jobDir}/named-model.txt`, namedModel);
 
+    const pythonExecutable = resolveNamedModelPython(namedModel);
     const solverArgs = [modelPath, inputFile, "--output", solutionFile].concat(solverOptions);
-    const solverSpawn = spawn("python3", solverArgs);
+    const solverSpawn = spawn(pythonExecutable, solverArgs);
 
     let thisLogStream = fs.createWriteStream(`${jobDir}/logs.txt`, { flags: "a" });
     solverSpawn.stdout.pipe(thisLogStream);
@@ -271,7 +282,7 @@ function submitNamedModel(req, res, thisJobId, appName, namedModel) {
 
     log(`submit ${appName} ${thisJobId} - named model ${namedModel}`, thisJobId);
     log(`submit ${appName} ${thisJobId} - spawned with options: ${solverOptions}`, thisJobId);
-    log(`submit ${appName} ${thisJobId} - command: python3 ${solverArgs.join(' ')}`, thisJobId);
+    log(`submit ${appName} ${thisJobId} - command: ${pythonExecutable} ${solverArgs.join(' ')}`, thisJobId);
     fs.writeFileSync(`${jobDir}/status.txt`, `wait`);
     res.json({ jobid: thisJobId });
 }
