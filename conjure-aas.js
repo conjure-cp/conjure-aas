@@ -309,7 +309,10 @@ function getHandler(req, res) {
         status_ = "not found";
     }
 
-    if (status_ == "not found" || timeDifferenceInSecs > 600) {
+    // Expire 10 minutes after solving finishes (status.txt mtime is updated on
+    // termination). Jobs still in "wait" are never expired by this timer.
+    const expired = status_ != "wait" && timeDifferenceInSecs > 600;
+    if (status_ == "not found" || expired) {
 
         // doesn't exist or has expired.
         // we serve the same response in either case
