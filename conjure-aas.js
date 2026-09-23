@@ -309,9 +309,15 @@ function getHandler(req, res) {
         status_ = "not found";
     }
 
-    // Expire 10 minutes after solving finishes (status.txt mtime is updated on
-    // termination). Jobs still in "wait" are never expired by this timer.
-    const expired = status_ != "wait" && timeDifferenceInSecs > 600;
+    // A finished solution stays available for 7 days so a client that is not
+    // polling can still import it (the workforce app imports on the next page
+    // load). Failures are dropped after 10 minutes. Jobs still in "wait"
+    // are never expired by this timer. status.txt mtime is updated on termination.
+    const SOLUTION_RETAIN_SECONDS = 7 * 24 * 60 * 60;
+    const FAILURE_RETAIN_SECONDS = 10 * 60;
+    const hasSolution = fs.existsSync(`conjure-output/${jobid}/solution.json`);
+    const retainSeconds = hasSolution ? SOLUTION_RETAIN_SECONDS : FAILURE_RETAIN_SECONDS;
+    const expired = status_ != "wait" && timeDifferenceInSecs > retainSeconds;
     if (status_ == "not found" || expired) {
 
         // doesn't exist or has expired.
