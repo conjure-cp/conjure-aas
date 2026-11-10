@@ -57,6 +57,10 @@ The service runs:
 python3 custom/<name>.py <jobdir>/input.json --output <jobdir>/solution.json [solverOptions...]
 ```
 
+### Intermediate solutions
+
+`/get` reports `ok` as soon as `<jobdir>/solution.json` parses, including while `status.txt` is still `wait`. A custom solver that wants to publish a better solution before it exits should atomically replace `<jobdir>/incumbent.json` instead. While `status.txt` is `wait` and `solution.json` is not ready, `/get` keeps `status: "wait"` and includes `incumbent.json` as `solution` when that file parses.
+
 ### Per-solver virtualenv (optional)
 
 Each named solver may have its own dependencies under `custom/<name>/venv/`. If that venv exists, conjure-aas uses its Python instead of system `python3`:

@@ -377,13 +377,25 @@ function getHandler(req, res) {
                 , logs: logs
             });
         } catch (err) {
-            log(`get ${appName} ${jobid} - ${status_}`, jobid);
-            res.json({
+            // solution.json is the finished solution and makes status "ok".
+            // While the job is still waiting, a custom solver may overwrite
+            // incumbent.json with its latest solution. Return that without
+            // marking the job finished.
+            const body = {
                 status: status_
                 , info: info
                 , logs: logs
                 , err: err
-            });
+            };
+            if (String(status_).trim() === "wait") {
+                try {
+                    body.solution = JSON.parse(fs.readFileSync(`conjure-output/${jobid}/incumbent.json`, "utf8"));
+                } catch (incumbentErr) {
+                    // No incumbent yet, or a replace is in progress.
+                }
+            }
+            log(`get ${appName} ${jobid} - ${status_}`, jobid);
+            res.json(body);
         }
     }
 }
